@@ -1,0 +1,14 @@
+# Ignore everything
+**
+
+# Except for the Data Simulation directory (note the lack of a trailing slash)
+!/Data Simulation
+
+# Include the contents of the Data Simulation directory
+!/Data Simulation/**
+
+# Do not ignore these specific files at the root of the project
+!.gitignore
+!/requirements.txt
+!/main.py
+# Add any other file names here with the leading '!' to indicate they should not be ignored
