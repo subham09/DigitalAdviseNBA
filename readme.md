@@ -17,7 +17,8 @@ This repository serves as a starting point for developing a next best action rec
 3. Activate the virtual environment. The command to activate the virtual environment depends on the operating system you are using. Here are some examples:
     - For Windows:
       ```
-      venv\Scripts\activate
+      venv\Scripts\activate.bat
+      venv\Scripts\activate.ps1
       ```
     - For macOS and Linux:
       ```
