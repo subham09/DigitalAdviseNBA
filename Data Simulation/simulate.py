@@ -33,13 +33,11 @@ def simulate_data(num_records):
     
     risk_profiles = np.random.choice(['Defensive', 'Conservative', 'Moderate', 'Balanced', 'Growth', 'High Growth'], num_records)
     current_sg = incomes * 0.12
-    current_vol_conccont = np.random.uniform(0, 10000, num_records)
-    #current_vol_nconccont = np.random.uniform(0, 10000, num_records)
-    current_vol_nconccont = np.random.choice([np.random.uniform(27500, current_sg[i]) if np.random.rand() < 0.25 else 0 for i in range(num_records)], num_records)
+    current_vol_conccont = np.random.choice([np.random.uniform(0, 27500 - current_sg[i]) if np.random.rand() < 0.25 else 0 for i in range(num_records)], num_records)
+    current_vol_nconccont = np.random.choice([np.random.uniform(0, 1000) if np.random.rand() < 0.05 else np.random.uniform(1000, 10000) if np.random.rand() < 0.1 else 0 for _ in range(num_records)], num_records)
     unused_concessional_cap = (25000 - current_sg - current_vol_conccont) * 5
-    retirement_ages = np.random.randint(60, 75, num_records)
-    target_retirement_incomes = np.where(has_partner, np.random.uniform(70000, 100000, num_records), np.random.uniform(30000, 60000, num_records))
-
+    retirement_ages = np.where(np.random.rand(num_records) < 0.25, np.round(np.random.uniform(60, 75, num_records)), 67)
+    target_retirement_incomes = np.where(has_partner, np.where(incomes > 100000, np.random.uniform(130000, 150000, num_records), np.random.uniform(70000, 100000, num_records)), np.random.uniform(50000, 70000, num_records))
     # More complex insurance data
     
     current_life_insurance_in_fund = np.random.uniform(50000, 1000000, num_records)
