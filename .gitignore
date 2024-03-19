@@ -8,6 +8,7 @@
 !/Data Simulation/**
 
 # Do not ignore these specific files at the root of the project
+!/.readme.md
 !.gitignore
 !/requirements.txt
 !/main.py

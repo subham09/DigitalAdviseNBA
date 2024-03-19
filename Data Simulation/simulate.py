@@ -35,9 +35,10 @@ def simulate_data(num_records):
     current_sg = incomes * 0.12
     current_vol_conccont = np.random.uniform(0, 10000, num_records)
     current_vol_nconccont = np.random.uniform(0, 10000, num_records)
+    current_vol_nconccont = np.random.choice([np.random.uniform(27500, current_sg[i]) if np.random.rand() < 0.25 else 0 for i in range(num_records)], num_records)
     unused_concessional_cap = (25000 - current_sg - current_vol_conccont) * 5
     retirement_ages = np.random.randint(60, 75, num_records)
-    target_retirement_incomes = np.random.uniform(30000, 80000, num_records)
+    target_retirement_incomes = np.where(has_partner, np.random.uniform(70000, 100000, num_records), np.random.uniform(30000, 60000, num_records))
 
     # More complex insurance data
     
@@ -65,6 +66,7 @@ def simulate_data(num_records):
     current_fee_dollar_platform = np.random.uniform(0, 500, num_records)
 
     # Combine into a DataFrame
+    
 
     data = pd.DataFrame({
         'Date of Birth': dates_of_birth.dt.date, 'Age': ages,'Gender': genders, 'Relationship Status': relationship_status,
