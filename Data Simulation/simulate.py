@@ -34,7 +34,7 @@ def simulate_data(num_records):
     risk_profiles = np.random.choice(['Defensive', 'Conservative', 'Moderate', 'Balanced', 'Growth', 'High Growth'], num_records)
     current_sg = incomes * 0.12
     current_vol_conccont = np.random.uniform(0, 10000, num_records)
-    current_vol_nconccont = np.random.uniform(0, 10000, num_records)
+    #current_vol_nconccont = np.random.uniform(0, 10000, num_records)
     current_vol_nconccont = np.random.choice([np.random.uniform(27500, current_sg[i]) if np.random.rand() < 0.25 else 0 for i in range(num_records)], num_records)
     unused_concessional_cap = (25000 - current_sg - current_vol_conccont) * 5
     retirement_ages = np.random.randint(60, 75, num_records)
