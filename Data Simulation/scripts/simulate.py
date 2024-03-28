@@ -15,8 +15,8 @@ def simulate_data(num_records):
     ages = (today - dates_of_birth).dt.days // 365
     genders = np.random.choice(['Male', 'Female'], num_records)
     relationship_status = np.random.choice(['Single', 'Couple'], num_records)
-    incomes = np.array([calculate_income(age) for age in ages])
-    super_balances = np.array([calculate_super_balance(age, income) for age, income in zip(ages, incomes)])
+    incomes = np.round(np.array([calculate_income(age) for age in ages]), 2)
+    super_balances = np.round(np.array([calculate_super_balance(age, income) for age, income in zip(ages, incomes)]), 2)
     postcodes = np.random.randint(1000, 9999, num_records)
     num_dependents = np.random.randint(0, 5, num_records)
 
@@ -26,31 +26,40 @@ def simulate_data(num_records):
     partner_dobs = pd.Series([dob + pd.DateOffset(years=np.random.randint(-5, 6)) if has_p else None for dob, has_p in zip(dates_of_birth, has_partner)])
     partner_ages = ((today - partner_dobs).dt.days // 365).where(partner_dobs.notna())
     partner_genders = [np.random.choice(['Male', 'Female']) if partner else None for partner in has_partner]
-    partner_incomes = np.array([calculate_income(age) if age is not None else None for age in partner_ages])
-    partner_super_balances = np.array([calculate_super_balance(age, income) for age, income in zip(partner_ages, incomes)])
-
-    # Financial and insurance data
+    partner_incomes = np.round(np.array([calculate_income(age) if age is not None else None for age in partner_ages]), 2)
+    partner_super_balances = np.round(np.array([calculate_super_balance(age, income) if age is not None and income is not None and calculate_super_balance(age, income) is not None else np.nan for age, income in zip(partner_ages, incomes)]), 2)    
     
     risk_profiles = np.random.choice(['Defensive', 'Conservative', 'Moderate', 'Balanced', 'Growth', 'High Growth'], num_records)
     current_sg = incomes * 0.12
-    current_vol_conccont = np.random.choice([np.random.uniform(0, 27500 - current_sg[i]) if np.random.rand() < 0.25 else 0 for i in range(num_records)], num_records)
-    current_vol_nconccont = np.random.choice([np.random.uniform(0, 1000) if np.random.rand() < 0.05 else np.random.uniform(1000, 10000) if np.random.rand() < 0.1 else 0 for _ in range(num_records)], num_records)
-    unused_concessional_cap = (25000 - current_sg - current_vol_conccont) * 5
+    current_vol_conccont = np.round(np.random.choice([np.random.uniform(0, 27500 - current_sg[i]) if np.random.rand() < 0.25 else 0 for i in range(num_records)], num_records), 2)
+    current_vol_nconccont = np.round(np.random.choice([np.random.uniform(0, 1000) if np.random.rand() < 0.05 else np.random.uniform(1000, 10000) if np.random.rand() < 0.1 else 0 for _ in range(num_records)], num_records), 2)
+    unused_concessional_cap = np.round(np.maximum(0, (27500 - (current_sg + current_vol_conccont)) * 5), 2)
     retirement_ages = np.where(np.random.rand(num_records) < 0.25, np.round(np.random.uniform(60, 75, num_records)), 67)
-    target_retirement_incomes = np.where(has_partner, np.where(incomes > 100000, np.random.uniform(130000, 150000, num_records), np.random.uniform(70000, 100000, num_records)), np.random.uniform(50000, 70000, num_records))
+    target_retirement_incomes = np.where(has_partner, np.where(incomes > 100000, np.round(np.random.uniform(130000, 150000, num_records), 2), np.round(np.random.uniform(70000, 100000, num_records), 2)), np.round(np.random.uniform(50000, 70000, num_records), 2))
     # More complex insurance data
     
-    current_life_insurance_in_fund = np.random.uniform(50000, 1000000, num_records)
-    current_income_prot_in_fund = np.random.uniform(0, 20000, num_records)
-    current_tpd_in_fund = np.random.uniform(50000, 500000, num_records)
-    current_life_insurance_outside_fund = np.random.uniform(50000, 1000000, num_records)
-    current_income_prot_outside_fund = np.random.uniform(0, 20000, num_records)
-    current_tpd_outside_fund = np.random.uniform(50000, 500000, num_records)
-    current_trauma_outside_fund = np.random.uniform(50000, 500000, num_records)
+    current_life_insurance_in_fund = np.round(np.random.choice([0, 100000, np.random.uniform(100000, 1000000)], num_records, p=[0.6, 0.3, 0.1]), 2)
+
+    income_70_percent = 0.7 * incomes
+    choices = [0, 2000] + list(income_70_percent)
+    probabilities = [0.6, 0.3] + [0.1 / len(income_70_percent)] * len(income_70_percent)
+    current_income_prot_in_fund = np.round(np.random.choice(choices, num_records, p=probabilities), 2)
+
+    current_tpd_in_fund = np.round(np.random.choice([0, 100000, np.random.uniform(100000, 1000000)], num_records, p=[0.6, 0.3, 0.1]), 2)
+    current_life_insurance_outside_fund = np.round(np.random.choice([0, np.random.uniform(500000, 1000000)], num_records, p=[0.5, 0.5]), 2)
+
+    income_70_percent_outside = 0.7 * incomes
+    choices_outside = [0] + list(income_70_percent_outside)
+    probabilities_outside = [0.6] + [0.4 / len(income_70_percent_outside)] * len(income_70_percent_outside)
+    current_income_prot_outside_fund = np.round(np.random.choice(choices_outside, num_records, p=probabilities_outside), 2)
+
+    current_tpd_outside_fund = np.random.choice([0, np.round(np.random.uniform(500000, 1500000), 2)], num_records, p=[0.5, 0.5])
+    current_trauma_outside_fund = np.random.choice([0, 100000, np.round(np.random.uniform(50000, 500000), 2)], num_records, p=[0.6, 0.3, 0.1])
 
     # Investment data
 
-    current_investment_option = np.random.choice(['Balanced', 'High Growth', 'Growth'], num_records)
+    risk_profiles = np.random.choice(['Defensive', 'Conservative', 'Moderate', 'Balanced', 'Growth', 'High Growth'], num_records)
+    current_investment_option = np.where(np.random.rand(num_records) < 0.8, 'Balanced', np.where(np.random.rand(num_records) < 0.95, risk_profiles, np.random.choice(['Balanced', 'High Growth', 'Growth'], num_records)))
 
     # Digital journey completion flags
     
@@ -58,10 +67,10 @@ def simulate_data(num_records):
 
     # Debt and fees
     
-    current_total_debt = np.random.uniform(0, 1000000, num_records)
-    current_fee_percent_investments = np.random.uniform(0, 1, num_records)
-    current_fee_percent_platform = np.random.uniform(0, 1, num_records)
-    current_fee_dollar_platform = np.random.uniform(0, 500, num_records)
+    current_total_debt = np.random.choice([0, np.round(np.random.uniform(20000, 100000), 2), np.round(np.random.uniform(200000, 1000000), 2)], num_records, p=[0.5, 0.1, 0.4])
+    current_fee_percent_investments = np.round(np.random.uniform(0, 1, num_records), 2)
+    current_fee_percent_platform = np.round(np.random.uniform(0, 0.5, num_records), 2)
+    current_fee_dollar_platform = np.random.choice([0, np.round(np.random.uniform(0, 200), 2)], num_records, p=[0.5, 0.5])
 
     # Combine into a DataFrame
     
@@ -108,9 +117,9 @@ def calculate_super_balance(age, income):
 
 # Generate the data and save it to a files
 
-num_records = 10  # Define how many records you want to generate
+num_records = 1000  # Define how many records you want to generate
 simulated_data = simulate_data(num_records)
 
 print(simulated_data)
-simulated_data.to_excel('simulated_data.xlsx', index=False)
+simulated_data.to_excel('../data/processed/simulated_data.xlsx', index=False)
 
