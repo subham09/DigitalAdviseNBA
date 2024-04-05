@@ -3,9 +3,11 @@
 
 # Except for the Data Simulation directory (note the lack of a trailing slash)
 !/Data Simulation
+!/Data Preprocessing
 
 # Include the contents of the Data Simulation directory
 !/Data Simulation/**
+!/Data Preprocessing/**
 
 # Do not ignore these specific files at the root of the project
 !/readme.md
